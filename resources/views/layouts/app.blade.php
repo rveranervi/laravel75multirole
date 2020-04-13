@@ -25,11 +25,11 @@
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 
     <!-- Custom fonts for this template-->
-    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
 
     <!-- Custom styles for this template-->
-    <link href="css/sb-admin-2.min.css" rel="stylesheet">
+    <link href="/css/sb-admin-2.min.css" rel="stylesheet">
 
     @yield('css')
 
@@ -58,8 +58,39 @@
       <li class="nav-item">
         <a class="nav-link" href="/home">
           <i class="fas fa-fw fa-tachometer-alt"></i>
-          <span>Dashboard</span></a>
+          <span>Bienvenido</span></a>
       </li>
+
+      @foreach(Auth::user()->getPermissions() as $module)
+      <hr class="sidebar-divider">
+      <div class="sidebar-heading">
+        {{$module->name}}
+      </div>
+      @foreach($module->submodules as $submodule)
+      @if($submodule->group==1)
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="{{$submodule->link}}" data-toggle="collapse" data-target="#subm{{$submodule->id}}" aria-expanded="true" aria-controls="collapsePages">
+          <i class="{{$submodule->icon}}"></i>
+          <span>{{$submodule->name}}</span>
+        </a>
+        <div id="subm{{$submodule->id}}" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+          <div class="bg-white py-2 collapse-inner rounded">
+            <h6 class="collapse-header">{{$submodule->titlegroup}}</h6>
+            @foreach($submodule->elements as $element)
+            <a class="collapse-item" href="{{$element->link}}">{{$element->name}}</a>
+            @endforeach
+          </div>
+        </div>
+      </li>
+      @else
+      <li class="nav-item">
+        <a class="nav-link" href="{{$submodule->link}}">
+          <i class="{{$submodule->icon}}"></i>
+          <span>{{$submodule->name}}</span></a>
+      </li>
+      @endif
+      @endforeach
+      @endforeach
 
       <!-- Divider -->
       <hr class="sidebar-divider">
@@ -169,16 +200,20 @@
           </button>
 
           <!-- Topbar Search -->
-          <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+          @if(isset($search))
+          <form method="POST" action="/search" class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+            @csrf
             <div class="input-group">
-              <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2">
+              <input type="text" class="form-control bg-light border-0 small" placeholder="Buscar" name="search">
+              <input type="hidden" name="route" value="{{ $search }}">
               <div class="input-group-append">
-                <button class="btn btn-primary" type="button">
+                <button class="btn btn-primary" type="submit">
                   <i class="fas fa-search fa-sm"></i>
                 </button>
               </div>
             </div>
           </form>
+          @endif
 
           <!-- Topbar Navbar -->
           <ul class="navbar-nav ml-auto">
@@ -314,25 +349,25 @@
             <li class="nav-item dropdown no-arrow">
               <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ Auth::user()->firstname }} {{ Auth::user()->lastname }}</span>
-                <img class="img-profile rounded-circle" src="https://source.unsplash.com/QAB-WJcbgJk/60x60">
+                <img class="img-profile rounded-circle" src="/img/profile.png">
               </a>
               <!-- Dropdown - User Information -->
               <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
-                <a class="dropdown-item" href="#">
+                <a class="dropdown-item" href="/profile">
                   <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                  Profile
+                  Mi perfil
                 </a>
                 <a class="dropdown-item" href="#">
                   <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                  Settings
+                  Configuración
                 </a>
                 <a class="dropdown-item" href="#">
                   <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
-                  Activity Log
+                  Log de actividades
                 </a>
                 <div class="dropdown-divider"></div>
                 <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault();document.getElementById('logout-form').submit();">
-                    {{ __('Logout') }}
+                    {{ __('Cerrar sesión') }}
                 </a>
                 <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                     @csrf
@@ -346,7 +381,9 @@
         <!-- End of Topbar -->
 
         <!-- Begin Page Content -->
+        @if(Auth::user()->validate_access(Route::currentRouteName()))
         @yield('content')
+        @endif
 
       </div>
       <!-- End of Main Content -->
@@ -373,14 +410,14 @@
   </a>
 
   <!-- Bootstrap core JavaScript-->
-  <script src="vendor/jquery/jquery.min.js"></script>
-  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/vendor/jquery/jquery.min.js"></script>
+  <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
   <!-- Core plugin JavaScript-->
-  <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+  <script src="/vendor/jquery-easing/jquery.easing.min.js"></script>
 
   <!-- Custom scripts for all pages-->
-  <script src="js/sb-admin-2.min.js"></script>
+  <script src="/js/sb-admin-2.min.js"></script>
 
   @yield('js')
 
